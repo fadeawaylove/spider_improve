@@ -26,23 +26,31 @@ class MysqlConn(object):
         self.connection.close()
 
     def execute(self, sql, params=None):
-        # try:
         self.cursor.execute(sql, params)
         return self.cursor
 
 
 if __name__ == '__main__':
     mysql_config_dict = dict(
-        host='192.168.1.109', port=3306, user='root', password='mysql', db='test_db'
+        host='192.168.219.3', port=3306, user='root', password='mysql', db='test_db'
     )
-    #
+    with MysqlConn(**mysql_config_dict) as conn:
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS `test_table` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `colume1` varchar(255) NOT NULL,
+            `colume2` varchar(255) NOT NULL,
+            PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+        AUTO_INCREMENT=1;"""
+        )
+
     # with MysqlConn(**mysql_config_dict) as conn:
-    #     ret = conn.execute("INSERT INTO `test_table` (`colume1`, `colume2`) VALUES (%s, %s)", ["我是你爸爸", "傻儿子"])
+    #     conn.execute("insert into test_table(colume1, colume2) values(%s, %s)", ["嘿嘿嘿", "哈哈哈"])
+    #     raise Exception("aaaaa")
+    #     ret = conn.execute("select * from test_table").fetchmany(10)
     #     print(ret)
 
     with MysqlConn(**mysql_config_dict) as conn:
-        # conn.execute("insert into test_table(colume1, colume2) values(%s, %s)", ["嘿嘿嘿", "哈哈哈"])
-        # raise Exception("aaaaa")
         ret = conn.execute("select * from test_table").fetchmany(10)
-
         print(ret)

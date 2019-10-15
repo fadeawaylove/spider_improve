@@ -24,7 +24,7 @@ def mysql_conn(**mysql_config):
 
 if __name__ == '__main__':
     mysql_config_dict = dict(
-        host='192.168.1.109', port=3306, user='root', password='mysql', db='test_db'
+        host='192.168.219.3', port=3306, user='root', password='mysql', db='test_db'
     )
     with mysql_conn(**mysql_config_dict) as conn:
         conn.execute("select * from test_table", [])
