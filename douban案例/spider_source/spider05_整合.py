@@ -2,11 +2,23 @@ import requests
 import lxml.etree
 import re
 
-
 class DoubanBook(object):
     tag_list_url = "https://book.douban.com/tag/?icn=index-nav"
     list_page_url = "https://book.douban.com/tag/{tag_name}?start={start}&type=T"
     book_info = ["作者", "出版社", "出品方", "原作名", "译者", "出版年", "页数", "定价", "装帧", "丛书", "ISBN", "副标题"]
+    # 将book_info转换为中文
+    book_info_details = [("作者", "author"),
+                         ("出版社", "publisher"),
+                         ("出品方", "producer"),
+                         ("原作名", "original_title"),
+                         ("译者", "translator"),
+                         ("出版年", "publish_time"),
+                         ("页数", "page_number"),
+                         ("定价", "price"),
+                         ("装帧", "pack"),
+                         ("丛书", "series"),
+                         ("ISBN", "isbn"),
+                         ("副标题", "subtitle")]
     request_header = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36",
         "Host": "book.douban.com",
@@ -53,23 +65,32 @@ class DoubanBook(object):
         book_info_str = "".join(book_info)
         book_info_str = re.sub("\s", "", book_info_str)
         # 作者:王朔出版社:云南人民出版社出版年:2004-9页数:224定价:20.00元装帧:平装丛书:王朔文集ISBN:9787222041226
-        for info in self.book_info:
+        book_detail = {}
+        for info, en_info in self.book_info_details:
             temp_info = re.search(r"({}:.*?:)".format(info), book_info_str + ":")
             if temp_info:
                 temp_info = temp_info.group(0)[0: -1]
                 temp_info = re.sub("{}$".format("$|".join(self.book_info)), "", temp_info)
-                print(temp_info)
-        book_title = html.xpath("""//div[@id="wrapper"]/h1/span/text()""")
-        print(book_title)
-        rating_num = html.xpath("""//div[@class="rating_self clearfix"]//strong/text()""")
-        print(rating_num)
-        book_summary = html.xpath("""//div[@id="link-report"]/div[1]/div[@class="intro"]/p/text()""")
-        print(book_summary)
-        author_summary = \
+                _, content = temp_info.split(":")
+                book_detail[en_info] = content
+            else:
+                book_detail[en_info] = None
+
+        book_detail["title"] = html.xpath("""//div[@id="wrapper"]/h1/span/text()""")
+        book_detail["rating_num"] = html.xpath("""//div[@class="rating_self clearfix"]//strong/text()""")
+        book_detail["book_summary"] = html.xpath("""//div[@id="link-report"]/div[1]/div[@class="intro"]/p/text()""")
+        book_detail["author_summary"] = \
             html.xpath("""//div[@class="related_info"]/div[@class="indent "]/div/div[@class="intro"]/p/text()""")
-        print(author_summary)
+        return book_detail
+
+    def clean_detail(self, data):
+        # 1.去重，可根据ISBN
+        # 2.将数据处理为正确的格式
+        data["publish_time"]
+
+        return data
 
 
 if __name__ == '__main__':
     douban = DoubanBook()
-    douban.get_book_detail("https://book.douban.com/subject/1015584/")
+    print(douban.get_book_detail("https://book.douban.com/subject/25862578/"))
