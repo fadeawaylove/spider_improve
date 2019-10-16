@@ -82,7 +82,8 @@ class DoubanBook(object):
         book_detail["rating_num"] = html.xpath("""//div[@class="rating_self clearfix"]//strong/text()""")
         book_detail["book_summary"] = html.xpath("""//div[@id="link-report"]/div[1]/div[@class="intro"]/p/text()""")
         book_detail["author_summary"] = \
-            html.xpath("""//div[@class="related_info"]/div[@class="indent "]/div/div[@class="intro"]/p/text()""")
+            html.xpath("""//div[@class="related_info"]/div[@class="indent "]/div/div[@class="intro"]/p/text()""") or \
+            html.xpath("""//div[@class="related_info"]/div[2]/span/div/p/text()""")
         return book_detail
 
     def clean_detail(self, data):
@@ -113,6 +114,7 @@ class DoubanBook(object):
 
 if __name__ == '__main__':
     douban = DoubanBook()
-    data = douban.get_book_detail("https://book.douban.com/subject/25862578/")
+    data = douban.get_book_detail("https://book.douban.com/subject/3211779/")
     data = douban.clean_detail(data)
+    print(data)
     douban.store_to_json(data, data["title"] + ".json")

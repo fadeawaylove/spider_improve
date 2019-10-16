@@ -81,9 +81,13 @@ class DoubanBook(object):
         book_detail["title"] = html.xpath("""//div[@id="wrapper"]/h1/span/text()""")
         book_detail["rating_num"] = html.xpath("""//div[@class="rating_self clearfix"]//strong/text()""")
         book_detail["book_summary"] = html.xpath("""//div[@id="link-report"]/div[1]/div[@class="intro"]/p/text()""")
+
         book_detail["author_summary"] = \
-            html.xpath("""//div[@class="related_info"]/div[@class="indent "]/div/div[@class="intro"]/p/text()""")
+            html.xpath("""//div[@class="related_info"]/div[@class="indent "]/div/div[@class="intro"]/p/text()""") or \
+            html.xpath("""//div[@class="related_info"]/div[2]/span/div/p/text()""")
+
         return book_detail
+
 
     def clean_detail(self, data):
         # 1.去重，可根据ISBN
@@ -104,9 +108,9 @@ class DoubanBook(object):
         data["author_summary"] = "".join(data["author_summary"])
         return data
 
+
 if __name__ == '__main__':
     douban = DoubanBook()
     data = douban.get_book_detail("https://book.douban.com/subject/25862578/")
     data = douban.clean_detail(data)
     print(data)
-
