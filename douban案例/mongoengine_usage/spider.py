@@ -36,7 +36,6 @@ class DoubanBook(object):
 
     def get_tags(self):
         resp = requests.get(self.tag_list_url)
-        print(resp.content)
         html = lxml.etree.HTML(resp.content)
         for tag in html.xpath("""//div[@class="article"]/div[2]/div"""):
             big_tag = tag.xpath("./a/@name")
