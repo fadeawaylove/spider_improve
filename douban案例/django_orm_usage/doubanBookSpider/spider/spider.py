@@ -2,6 +2,9 @@ import requests
 import lxml.etree
 import re
 import datetime
+import random
+
+from utils.spider_utils import get_free_proxies
 
 
 class DoubanBook(object):
@@ -31,22 +34,26 @@ class DoubanBook(object):
         "Cookie": 'll="118282"; bid=sVgpNNcg4h0; _vwo_uuid_v2=DDF0192A91C8216C5A42BF421E30FB580|472b7c1a09d6b06a818bcbf1e7802f20; push_doumail_num=0; __utmv=30149280.20156; douban-fav-remind=1; dbcl2="201568471:ZpVhEkEQZ3I"; douban-profile-remind=1; ck=v-Tl; gr_user_id=fa3806ae-4b83-4ee8-a4ba-8a771cca6758; __utma=30149280.1614056093.1565774305.1568700472.1571111367.7; __utmc=30149280; __utmz=30149280.1571111367.7.7.utmcsr=baidu|utmccn=(organic)|utmcmd=organic; __utma=81379588.116534101.1571111367.1571111367.1571111367.1; __utmc=81379588; __utmz=81379588.1571111367.1.1.utmcsr=baidu|utmccn=(organic)|utmcmd=organic; __yadk_uid=8njJt3CZEiFAL75t2C1mCl02qk13t4t1; push_noty_num=0; gr_cs1_be525764-c466-4c97-a8b6-a622ee68eab1=user_id%3A1; _pk_ref.100001.3ac3=%5B%22%22%2C%22%22%2C1571138283%2C%22https%3A%2F%2Fwww.baidu.com%2Flink%3Furl%3D7u5Jw1vq1YBlhMpYoZwEx7VUVd-BW1CTtLbUtNmWiRz1ZtjdbQEQQTw_sRjP76c0%26wd%3D%26eqid%3De3985ce400063ea7000000065da541c3%22%5D; _pk_ses.100001.3ac3=*; ap_v=0,6.0; gr_session_id_22c937bbd8ebd703f2d8e9445f7dfd03=abbd1d1e-54be-497b-a155-effa705c3b21; gr_cs1_abbd1d1e-54be-497b-a155-effa705c3b21=user_id%3A1; gr_session_id_22c937bbd8ebd703f2d8e9445f7dfd03_abbd1d1e-54be-497b-a155-effa705c3b21=true; _pk_id.100001.3ac3=bffae89b4350fc30.1571111367.3.1571139703.1571128736.'
     }
 
+    https_proxies = {"https": random.choice(get_free_proxies()["https"])}
+    print(https_proxies)
+
     def __init__(self, offset=20):
         self.offset = offset
 
     def get_tags(self):
         resp = requests.get(self.tag_list_url)
-        print(resp.content)
+        print(resp.text)
         html = lxml.etree.HTML(resp.content)
         for tag in html.xpath("""//div[@class="article"]/div[2]/div"""):
             big_tag = tag.xpath("./a/@name")
             small_tag = tag.xpath("./table/tbody/tr/td/a/text()")
-            # print(big_tag, small_tag)
+            print(big_tag, small_tag)
             yield big_tag, small_tag
 
     def get_list_page(self, tag_name, page_num):
         """获取详情页地址"""
-        resp = requests.get(self.list_page_url.format(tag_name=tag_name, start=(page_num - 1) * self.offset))
+        resp = requests.get(self.list_page_url.format(tag_name=tag_name, start=(page_num - 1) * self.offset),
+                            proxies=self.https_proxies)
         html = lxml.etree.HTML(resp.content)
         detail_page_url_list = html.xpath("""//*[@id="subject_list"]/ul/li/div[1]/a/@href""")
         has_next = True if html.xpath("""//span[@class="next"]/a/@href""") else False
@@ -62,7 +69,7 @@ class DoubanBook(object):
             yield from self.get_all_list_page(tag_name, page_num + 1)
 
     def get_book_detail(self, url):
-        resp = requests.get(url, headers=self.request_header)
+        resp = requests.get(url, headers=self.request_header, proxies=self.https_proxies)
         html = lxml.etree.HTML(resp.content)
         book_info = html.xpath("""//div[@id="info"]//text()""")
         book_info_str = "".join(book_info)

@@ -9,9 +9,9 @@ class Command(BaseCommand):
     help = 'run spider'
 
     def handle(self, *args, **options):
+        print("开始运行")
         for bt, st in spider.get_tags():
             if not BigTag.objects.filter(btag=bt[0]):
-                print(2222)
                 big_tag = BigTag(btag=bt[0])
                 big_tag.save()
                 for t in st:
