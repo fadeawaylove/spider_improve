@@ -1,7 +1,7 @@
 class Request(object):
     """请求对象"""
 
-    def __init__(self, url, method="GET", query=None, body=None, name="request"):
+    def __init__(self, url, method="GET", query=None, body=None, name="request", headers=None):
         self.url = url
         self.method = method
         if query is None:
@@ -14,4 +14,6 @@ class Request(object):
         if not isinstance(body, dict):
             raise Exception("body must be dict type")
         self.body = body
+        self.headers = headers
+
         self.name = name  # 当前请求属于哪个爬虫
