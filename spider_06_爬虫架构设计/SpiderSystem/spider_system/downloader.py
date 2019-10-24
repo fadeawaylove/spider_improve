@@ -6,7 +6,6 @@ from spider_system.response import Response
 
 class Downloader(object):
 
-
     def fetch(self, request: Request):
         """根据request发起请求 构建response对象"""
         if request.method.upper() == "GET":

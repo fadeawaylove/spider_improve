@@ -1,5 +1,6 @@
 import urllib.parse
 
+
 class Request(object):
     """请求对象"""
 
@@ -19,7 +20,6 @@ class Request(object):
         self.headers = headers
 
         self.name = name  # 当前请求属于哪个爬虫
-
 
     @property
     def url_with_query(self):

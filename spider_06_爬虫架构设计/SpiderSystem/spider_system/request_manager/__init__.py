@@ -45,7 +45,7 @@ class RequestScheduler(object):
         :return:
         '''
 
-        from request_manager.utils.redis_tools import get_redis_queue_cls
+        from .utils.redis_tools import get_redis_queue_cls
         self._queue_cls = get_redis_queue_cls(queue_type)
 
     def _get_request_filter(self, filter_name):

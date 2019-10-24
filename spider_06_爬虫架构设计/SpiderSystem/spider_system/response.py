@@ -14,11 +14,9 @@ class Response(object):
         self.headers = headers
         self.body = body
 
-
     def xpath(self, rule):
         html = lxml.etree.HTML(self.body)
         return html.xpath(rule)
-
 
     def select(self, rule):
         soup = BeautifulSoup(self.body, "lxml")
@@ -28,7 +26,6 @@ class Response(object):
         d = PyQuery(lxml.etree.HTML(self.body))
         return d(rule)
 
-
     def re_match(self, rule):
         return re.match(rule, self.body)
 
@@ -37,7 +34,3 @@ class Response(object):
 
     def re_findall(self, rule):
         return re.findall(rule, self.body)
-
-
-
-
