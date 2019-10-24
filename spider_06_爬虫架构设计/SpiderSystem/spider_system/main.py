@@ -3,26 +3,16 @@ from spider_system.request_manager import RequestScheduler
 from spider_system.request_manager.utils.redis_tools import get_redis_queue_cls
 from spider_system.downloader import Downloader
 
-REQUEST_MANAGER_CONFIG = {
-    # 请求队列设置，去重后的请求都存在这里面
-    "queue_type": "fifo",
-    "queue_kwargs": {"host": "192.168.219.3", "port": 6379, "db": 2},
-
-    # 过滤器的配置，使用的是redis过滤器
-    "filter_type": "redis",
-    "filter_kwargs": {"redis_key": "redis_filter", "redis_host": "192.168.219.3"},
-}
-
 FILTER_QUEUE = get_redis_queue_cls("fifo")
-PROJECT_NAME = "baidu"
 
 
 class Master(object):
 
-    def __init__(self, spiders):
+    def __init__(self, spiders, request_manager_config, project_name):
         self.filter_queue = FILTER_QUEUE("filter_queue", host="192.168.219.3")  # 请求去重队列，等待过滤的原始请求
-        self.request_manager = RequestScheduler(**REQUEST_MANAGER_CONFIG)  # 包含去重过滤器和存储请求的队列（优先级，fifo，lifo）
+        self.request_manager = RequestScheduler(**request_manager_config)  # 包含去重过滤器和存储请求的队列（优先级，fifo，lifo）
         self.spiders = spiders
+        self.project_name = project_name
 
     def run_start_request(self):
         for spider in self.spiders.values():
@@ -32,7 +22,7 @@ class Master(object):
     def run_filter_queue(self):
         while True:
             request = self.filter_queue.get()
-            self.request_manager.add_request(request, PROJECT_NAME)
+            self.request_manager.add_request(request, self.project_name)
 
     def run(self):
         self.run_start_request()
@@ -41,15 +31,16 @@ class Master(object):
 
 class Slave(object):
 
-    def __init__(self, spiders):
+    def __init__(self, spiders, request_manager_config, project_name):
         self.filter_queue = FILTER_QUEUE("filter_queue", host="192.168.219.3")  # 请求去重队列，等待过滤的原始请求
-        self.request_manager = RequestScheduler(**REQUEST_MANAGER_CONFIG)  # 包含去重过滤器和存储请求的队列（优先级，fifo，lifo）
+        self.request_manager = RequestScheduler(**request_manager_config)  # 包含去重过滤器和存储请求的队列（优先级，fifo，lifo）
         self.downloader = Downloader()
         self.spiders = spiders
+        self.project_name = project_name
 
     def run(self):
         while True:
-            request = self.request_manager.get_request(PROJECT_NAME)
+            request = self.request_manager.get_request(self.project_name)
             resp = self.downloader.fetch(request)
             spider = self.spiders[request.name]()
 

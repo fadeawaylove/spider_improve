@@ -6,7 +6,7 @@ class BaseSpider(object):
     name = "demo"
 
     def start_requests(self):
-        yield Request("http://www.baidu.com", name=self.name)
+        yield Request("http://www.baidu.com/s?wd=python", name=self.name)
 
     def parse(self, response: Response):
         """生成器，返回有两种，Request或者data"""

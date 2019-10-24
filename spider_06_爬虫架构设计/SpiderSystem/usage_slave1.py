@@ -30,6 +30,5 @@ class BaiduSpider(BaseSpider):
 
 if __name__ == '__main__':
     spiders = {BaiduSpider.name: BaiduSpider}
-    Master(spiders).run()
-
-    # Slave(spiders).run()
+    # Master(spiders).run()
+    Slave(spiders).run()
