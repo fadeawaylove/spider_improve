@@ -1,3 +1,6 @@
+import random
+import time
+
 from spider_system.main import Master, Slave
 
 from spider_system.spider import BaseSpider
@@ -20,13 +23,8 @@ class BaiduSpider(BaseSpider):
     name = "baidu"
 
     def start_requests(self):
-        yield Request("http://www.baidu.com", name=self.name)
-        yield Request("http://www.baidu.com/s?wd=python2", name=self.name)
-        yield Request("http://www.baidu.com/s?wd=python3", name=self.name)
-        yield Request("http://www.baidu.com/s?wd=python4", name=self.name)
-        yield Request("http://www.baidu.com/s?wd=python5", name=self.name)
-        yield Request("http://www.baidu.com/s?wd=python6", name=self.name)
-        yield Request("http://www.baidu.com/s?wd=python7", name=self.name)
+        for i in range(50):
+            yield Request("http://www.baidu.com/s?wd=python{}".format(i), name=self.name)
 
     def parse(self, response: Response):
         """生成器，返回有两种，Request或者data"""
@@ -45,4 +43,4 @@ class BaiduSpider(BaseSpider):
 if __name__ == '__main__':
     spiders = {BaiduSpider.name: BaiduSpider}
     Master(spiders, request_manager_config=REQUEST_MANAGER_CONFIG, project_name=PROJECT_NAME).run()
-    Slave(spiders, request_manager_config=REQUEST_MANAGER_CONFIG, project_name=PROJECT_NAME).run()
+    # Slave(spiders, request_manager_config=REQUEST_MANAGER_CONFIG, project_name=PROJECT_NAME).run()
