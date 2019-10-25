@@ -125,13 +125,11 @@ class RequestScheduler(object):
         if request_filter.is_exists(request):
             logging.info("发现重复请求: <%s>" % request.url)
         else:
+            request.id = request_filter.mark_request(request)
             if priority is None:
                 request_queue.put(request)
             else:
                 request_queue.put((priority, request))
-
-            request_filter.mark_request(request)
-
             logging.info("请求添加成功: <%s>" % request.url)
 
     def get_request(self, queue_name, block=True):

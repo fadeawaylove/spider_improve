@@ -60,9 +60,9 @@ class BloomFilter(object):
         offsets = []
         for hash_value in self.multiple_hash.get_hash_values(data):
             offset = self._get_offset(hash_value)
-            offsets.append(offset)
+            offsets.append(str(offset))
             self.client.setbit(self.redis_key, offset, 1)
-        return offsets
+        return "-".join(offsets)
 
     def is_exists(self, data):
         ret_list = []

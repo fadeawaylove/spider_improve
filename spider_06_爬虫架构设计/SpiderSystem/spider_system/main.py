@@ -2,6 +2,8 @@ import asyncio
 import tornado.ioloop
 import threading
 
+import redis
+import pickle
 from spider_system.request import Request
 from spider_system.request_manager import RequestScheduler
 from spider_system.request_manager.utils.redis_tools import get_redis_queue_cls
@@ -44,24 +46,36 @@ class Slave(object):
         self.downloader = TornadoAsyncDownloader()
         self.spiders = spiders
         self.project_name = project_name
+        self.request_watcher = RequestWatcher()
 
     async def handler_request(self):
         io_loop = tornado.ioloop.IOLoop().current()
 
         # 将耗时操作放到线程池，返回的是一个future对象
         request = await io_loop.run_in_executor(None, self.request_manager.get_request, self.project_name)
-        resp = await self.downloader.fetch(request)
-        spider = self.spiders[request.name]()
 
-        for result in spider.parse(resp):
-            if result is None:
-                raise Exception("不允许返回None！")
-            if isinstance(result, Request):
-                await io_loop.run_in_executor(None, self.filter_queue, result)
-                # self.filter_queue.put(result)
-            else:
-                new_result = spider.data_clean(result)
-                spider.data_save(new_result)
+        # 将request加入到正在处理的hash中
+        self.request_watcher.mark_processing_requests(request)
+
+        try:
+            resp = await self.downloader.fetch(request)
+            spider = self.spiders[request.name]()
+
+            for result in spider.parse(resp):
+                if result is None:
+                    raise Exception("不允许返回None！")
+                if isinstance(result, Request):
+                    await io_loop.run_in_executor(None, self.filter_queue, result)
+                    # self.filter_queue.put(result)
+                else:
+                    new_result = spider.data_clean(result)
+                    spider.data_save(new_result)
+        except Exception as e:
+            request.error = e
+            self.request_watcher.mark_failed_requests(request, str(e))
+            raise Exception(e)
+        finally:
+            self.request_watcher.unmark_processing_requests(request)
 
     async def run(self):
         while True:
@@ -73,3 +87,22 @@ class Slave(object):
                 self.handler_request(),
             ]
             )
+
+
+class RequestWatcher(object):
+
+    def __init__(self):
+        self.redis_cli = redis.StrictRedis(host="192.168.219.3")
+
+    def mark_processing_requests(self, request):
+        self.redis_cli.hset("processing_requests", request.id, pickle.dumps(request))
+
+    def unmark_processing_requests(self, request):
+        self.redis_cli.hdel("processing_requests", request.id)
+
+    def mark_failed_requests(self, request, error):
+        request.error = error
+        self.redis_cli.hset("failed_requests", request.id, pickle.dumps(request))
+
+    def unmark_failed_requests(self, request):
+        self.redis_cli.hdel("failed_requests", request.id)

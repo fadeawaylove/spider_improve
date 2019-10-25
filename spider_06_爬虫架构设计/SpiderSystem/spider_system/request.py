@@ -4,7 +4,7 @@ import urllib.parse
 class Request(object):
     """请求对象"""
 
-    def __init__(self, url, method="GET", query=None, body=None, name="request", headers=None):
+    def __init__(self, url, method="GET", query=None, body=None, name="request", headers=None, id =None):
         self.url = url
         self.method = method
         if query is None:
@@ -20,6 +20,8 @@ class Request(object):
         self.headers = headers
 
         self.name = name  # 当前请求属于哪个爬虫
+
+        self.id = id  # fp指纹
 
     @property
     def url_with_query(self):
