@@ -9,9 +9,9 @@ class RequestsDownloader(object):
 
     def fetch(self, request):
         '''根据request发起请求，构建Response对象'''
-        if request.method.upper()== "GET":
+        if request.method.upper() == "GET":
             resp = requests.get(request.url_with_query, headers=request.headers)
-        elif request.method.upper()== "POST":
+        elif request.method.upper() == "POST":
             resp = requests.post(request.url_with_query, headers=request.headers, body=request.body)
         else:
             raise Exception("Only support GET or POST Method!")
@@ -27,7 +27,8 @@ class TornadoDownloader(object):
         print("tornado 同步客户端发的请求")
         tornado_request = HTTPRequest(request.url_with_query, method=request.method.upper(), headers=request.headers)
         tornado_response = self.httpclient.fetch(tornado_request)
-        return Response(request=request, status_code=tornado_response.code, url=tornado_response.effective_url, headers=tornado_response.headers, body=tornado_response.buffer.read())
+        return Response(request=request, status_code=tornado_response.code, url=tornado_response.effective_url,
+                        headers=tornado_response.headers, body=tornado_response.buffer.read())
 
     def __del__(self):
         self.httpclient.close()
@@ -42,7 +43,9 @@ class AsyncTornadoDownloader(object):
         print("tornado 异步客户端发的请求")
         tornado_request = HTTPRequest(request.url_with_query, method=request.method.upper(), headers=request.headers)
         tornado_response = await self.async_http_client.fetch(tornado_request)
-        return Response(request=request, status_code=tornado_response.code, url=tornado_response.effective_url, headers=tornado_response.headers, body=tornado_response.buffer.read())
+        return Response(request=request, status_code=tornado_response.code, url=tornado_response.effective_url,
+                        headers=tornado_response.headers, body=tornado_response.buffer.read())
+
 
 import tornado.ioloop
 import asyncio

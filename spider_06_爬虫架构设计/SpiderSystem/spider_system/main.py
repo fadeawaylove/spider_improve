@@ -7,7 +7,7 @@ import pickle
 from spider_system.request import Request
 from spider_system.request_manager import RequestScheduler
 from spider_system.request_manager.utils.redis_tools import get_redis_queue_cls
-from spider_system.downloader import Downloader, TornadoDownloader, TornadoAsyncDownloader
+from spider_system.downloader import Downloader, TornadoDownloader, TornadoAsyncDownloader, ChromeDownloader
 
 FILTER_QUEUE = get_redis_queue_cls("fifo")
 
@@ -43,7 +43,7 @@ class Slave(object):
     def __init__(self, spiders, request_manager_config, project_name):
         self.filter_queue = FILTER_QUEUE("filter_queue", host="192.168.219.3")  # 请求去重队列，等待过滤的原始请求
         self.request_manager = RequestScheduler(**request_manager_config)  # 包含去重过滤器和存储请求的队列（优先级，fifo，lifo）
-        self.downloader = TornadoAsyncDownloader()
+        self.downloader = ChromeDownloader()
         self.spiders = spiders
         self.project_name = project_name
         self.request_watcher = RequestWatcher()
