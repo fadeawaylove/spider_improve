@@ -45,6 +45,6 @@ RUN git clone https://github.com/edenhill/librdkafka.git &&\
     pip install confluent-kafka
 
 # 安装spidersystem时，先将spidersystem文件夹与setup.py拷贝到当前路径的my_moudle文件夹下
-#COPY my_moudle /my_moudle/
-#RUN cd /my_moudle &&\
-#    python setup.py install
+COPY my_module /my_module/
+RUN cd /my_module &&\
+    python setup.py install
